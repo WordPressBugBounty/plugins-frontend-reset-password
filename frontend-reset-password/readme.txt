@@ -3,7 +3,7 @@ Contributors: wpenhanced, rwebster85
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VAYF6G99MCMHU
 Author URI: https://wpenhanced.com
 Requires at Least: 4.4
-Tested up to: 6.5.2
+Tested up to: 6.8
 Stable tag: trunk
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -79,6 +79,12 @@ You can customise **Frontend Reset Password** on the Plugins, Frontend Reset Pas
 2. Enter New Password Form (Twenty Seventeen Theme)
 
 == Changelog ==
+
+= 1.2.3 - 16th April 2025 =
+* Fixed bug when using WP 2FA
+* Added {email} tag as option for custom email template
+* Fix fatal error when there are issues sending email
+* Fixed issue where translations were not loading from frontend-reset-password-LANG.mo
 
 = 1.2.2 - 1st August 2023 =
 * MOD: Lost Password Form - Accessibility

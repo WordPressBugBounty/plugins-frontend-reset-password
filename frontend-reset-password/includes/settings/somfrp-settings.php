@@ -540,6 +540,7 @@ function somfrp_email_message_render() {
 			<p><strong>Use the following codes to show the relevant info in the email:</strong></p>
 			<ul>
 				<li><strong>Username:</strong> <input onClick="this.setSelectionRange(0, this.value.length)" type="text" class="somfrp-inline-input" value="{username}" readonly></li>
+				<li><strong>Email:</strong> <input onClick="this.setSelectionRange(0, this.value.length)" type="text" class="somfrp-inline-input" value="{email}" readonly></li>
 				<li><strong>Reset URL:</strong> <input onClick="this.setSelectionRange(0, this.value.length)" type="text" class="somfrp-inline-input" value="{reset_link}" readonly></li>
 			</ul>
 

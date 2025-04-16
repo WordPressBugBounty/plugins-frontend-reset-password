@@ -11,8 +11,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 add_action( 'init', 'somfrp_load_lang' );
 function somfrp_load_lang() {
-	$lang_dir = SOMFRP_PATH  . 'i18n/languages';
-	load_plugin_textdomain( 'frontend-reset-password', false, $lang_dir );
+    // Determine the current locale (user-specific or site-wide)
+    $locale = determine_locale(); 
+    
+    // Construct the path to the appropriate .mo file
+    $mo_file = SOMFRP_PATH  .  "i18n/languages/frontend-reset-password-$locale.mo";
+
+    // Attempt to load the .mo file
+    if ( file_exists( $mo_file ) ) {
+        load_textdomain( 'frontend-reset-password', $mo_file );
+    } else {
+        $lang_dir = SOMFRP_PATH  . 'i18n/languages';
+		load_plugin_textdomain( 'frontend-reset-password', false, $lang_dir );
+    }
 }
 
 add_action( 'wp_enqueue_scripts', 'somfrp_lost_password_style' );
@@ -340,7 +351,8 @@ function somfrp_lost_pass_callback() {
 	 * @param WP_Error $errors A WP_Error object containing any errors generated
 	 *                         by using invalid credentials.
 	 */
-	do_action( 'lostpassword_post' );
+	$errors = new WP_Error();
+	do_action( 'lostpassword_post', $errors, $user_data );
 
 	// Redefining user_login ensures we return the right case in the email.
 	$user_id = $user_data->ID;
@@ -398,8 +410,13 @@ function somfrp_lost_pass_callback() {
 	} else {
 
 		$email_body_user = str_replace( "{username}", $user_login, $email_body );
+
 		$email_body_link = str_replace( "{reset_link}", $reset_link, $email_body_user );
-		$email_body = wpautop( $email_body_link );
+
+		$email_body_email = str_replace( "{email}", $user_email, $email_body_link );
+
+		$email_body = wpautop( $email_body_email );
+
 		$message = $email_body;
 
 	}
@@ -432,6 +449,11 @@ function somfrp_lost_pass_callback() {
 	}
 
 	$email_sent = false;
+
+	// Ensure $errors is initialized as an array before using it
+	if ( ! is_array( $errors ) ) {
+		$errors = array();
+	}
 
 	if ( wp_mail( $user_email, wp_specialchars_decode( $title ), $message, $headers ) ) {
 		$email_sent = true;
@@ -530,20 +552,11 @@ function somfrp_reset_pass_handler( $action = '' ) {
 	$user = check_password_reset_key( $key, $login );
 
 	if ( is_wp_error( $user ) ) {
-
 		if ( $user->get_error_code() === 'expired_key' ) {
-
 			$errors['expired_key'] = esc_html__( 'Sorry, that key has expired. Please reset your password again.', 'frontend-reset-password' );
-
 		} else {
-
 			$errors['invalid_key'] = esc_html__( 'Sorry, that key does not appear to be valid. Please reset your password again.', 'frontend-reset-password' );
-
 		}
-
-	}
-
-	if ( ! empty( $errors ) ) {
 		$_REQUEST['errors'] = $errors;
 		return;
 	}

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Frontend Reset Password
  * Description: Let your users reset their forgotten passwords from the frontend of your website.
- * Version: 1.2.3
+ * Version: 1.2.4
  * Author: WP Enhanced
  * Author URI: https://wpenhanced.com
  * Requires at least: 4.4

@@ -42,7 +42,6 @@ function somfrp_plugin_row_meta( $links, $file ) {
 
 add_action( 'admin_enqueue_scripts', 'somfrp_admin_load_scripts' );
 function somfrp_admin_load_scripts() {
-
 	if ( ( isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] == 'somfrp_options_page' ) ) {
 		/**
 		 * If the current admin page is this plugin's settings page
@@ -95,6 +94,12 @@ function somfrp_options_page() {
 		if ( 'security' == $active_section ) {
 	
 			somfrp_security_settings_content();
+			
+		}
+
+		if ( 'design' == $active_section ) {
+	
+			somfrp_design_settings_content();
 			
 		}
 
@@ -183,15 +188,15 @@ function somfrp_get_settings_tabs() {
 	<h2 class="nav-tab-wrapper">
 		<?php
 		/*
-		<a href="<?php echo somfrp_get_plugin_link(); ?>&tab=home" class="nav-tab <?php echo $active_tab == 'home' ? 'nav-tab-active' : ''; ?>">Home</a>
+		<a href="<?php echo somfrp_get_plugin_link(); "&tab=home" class="nav-tab <?php echo $active_tab == 'home' ? 'nav-tab-active' : ''; ?>">Home</a>
 			<?php do_action( 'somfrp_settings_tabs_after_home', $active_tab ); ?>
 		*/
 			?>
 		<a href="<?php echo somfrp_get_plugin_link(); ?>&tab=settings" class="nav-tab <?php echo $active_tab == 'settings' ? 'nav-tab-active' : ''; ?>">Settings</a>
 			<?php do_action( 'somfrp_settings_tabs_after_settings', $active_tab ); ?>
-		<a href="<?php echo somfrp_get_plugin_link(); ?>&tab=support" class="nav-tab <?php echo $active_tab == 'support' ? 'nav-tab-active' : ''; ?>">Support</a>
+		<a href="<?php echo somfrp_get_plugin_link() . '&tab=support'; ?>" class="nav-tab <?php echo $active_tab == 'support' ? 'nav-tab-active' : ''; ?>">Support</a>
 			<?php do_action( 'somfrp_settings_tabs_after_more', $active_tab ); ?>
-		<a href="<?php echo somfrp_get_plugin_link(); ?>&tab=more" class="nav-tab <?php echo $active_tab == 'more' ? 'nav-tab-active' : ''; ?>">More</a>
+		<a href="<?php echo somfrp_get_plugin_link() . '&tab=more'; ?>" class="nav-tab <?php echo $active_tab == 'more' ? 'nav-tab-active' : ''; ?>">More</a>
 			<?php do_action( 'somfrp_settings_tabs_after_more', $active_tab ); ?>
 	</h2>
 
@@ -208,8 +213,10 @@ function somfrp_get_settings_sub_tabs() {
 		<ul class="subsubsub">
 			<li><a href="<?php echo somfrp_get_plugin_link(); ?>&tab=settings&section=general" class="<?php echo $active_section == 'general' ? 'current' : ''; ?>">General</a> | </li>
 				<?php do_action( 'somfrp_settings_subtabs_after_general', $active_section ); ?>
-			<li><a href="<?php echo somfrp_get_plugin_link(); ?>&tab=settings&section=security" class="<?php echo $active_section == 'security' ? 'current' : ''; ?>">Security</a></li>
+			<li><a href="<?php echo somfrp_get_plugin_link() . '&tab=settings&section=security'; ?>" class="<?php echo $active_section == 'security' ? 'current' : ''; ?>">Security</a> | </li>
 				<?php do_action( 'somfrp_settings_subtabs_after_security', $active_section ); ?>
+			<li><a href="<?php echo somfrp_get_plugin_link() . '&tab=settings&section=design'; ?>" class="<?php echo $active_section == 'design' ? 'current' : ''; ?>">Design</a></li>
+				<?php do_action( 'somfrp_settings_subtabs_after_design', $active_section ); ?>
 		</ul>
 			
 	<?php
@@ -278,6 +285,36 @@ function somfrp_security_settings_content() { ?>
 
 }
 
+function somfrp_design_settings_content() { ?>
+
+	<div class="som-settings-container">
+		<div class="som-settings-row">
+		
+			<div class="som-settings-col-12">
+	
+				<form action="options.php" class="som-settings-settings-form" method="post">
+			
+					<div class="somfrp-gen-settings-form-wrap">
+			
+					<?php
+						settings_fields( 'somfrp_design_settings' );
+						do_settings_sections( 'somfrp_design_settings' );
+						submit_button();
+					?>
+			
+					</div>
+			
+				</form>
+		
+			</div>
+
+		</div>
+	</div>
+
+<?php
+
+}
+
 function somfrp_support_guide() { ?>
 
 	<div class="som-settings-container">
@@ -296,7 +333,7 @@ function somfrp_support_guide() { ?>
 					</li>
 					<li>
 						<h3>Step 2: Set the Reset Password Page Setting</h3>
-						<p>Go to the plugin <a href="<?php echo somfrp_get_plugin_link(); ?>&tab=settings">settings</a> tab and select your reset password page from the dropdown box labelled "Reset Password Page".</p>
+						<p>Go to the plugin <a href="<?php echo somfrp_get_plugin_link(); ?>"&tab=settings">settings</a> tab and select your reset password page from the dropdown box labelled "Reset Password Page".</p>
 					</li>
 					<li>
 						<h3>Step 3: Customise! (optional)</h3>
@@ -475,6 +512,15 @@ function somfrp_settings_init() {
 		'somfrp_gen_settings_section'
 	);
 
+	// Reset Link Text
+	add_settings_field(
+		'somfrp_reset_link_text',
+		__( 'Reset Link Text', 'frontend-reset-password' ),
+		'somfrp_reset_link_text_render',
+		'somfrp_gen_settings',
+		'somfrp_gen_settings_section'
+	);
+
 	add_settings_field(
 		'somfrp_email_subject',
 		__( 'Email Subject', 'frontend-reset-password' ),
@@ -499,7 +545,12 @@ function somfrp_settings_init() {
 		'somfrp_gen_settings_section'
 	);
 
-	register_setting( 'somfrp_security_settings', 'somfrp_security_settings' );
+	register_setting( 'somfrp_security_settings', 'somfrp_security_settings',
+		[
+		'type'              => 'array',
+		'sanitize_callback' => 'somfrp_security_sanitize_options',
+		]);
+
 	add_settings_section(
 		'somfrp_security_settings_section',
 		__( 'Security Settings', 'frontend-reset-password' ),
@@ -515,6 +566,91 @@ function somfrp_settings_init() {
 		'somfrp_security_settings_section'
 	);
 
+// CJS
+	add_settings_field(
+		'somfrp_pass_format', 
+		__( 'Format Requirement', 'frontend-reset-password' ),
+		'somfrp_pass_format_render',
+		'somfrp_security_settings',
+		'somfrp_security_settings_section'
+	);
+// CJS end
+
+	register_setting(
+		'somfrp_design_settings',
+		'somfrp_design_settings',
+		array(
+			'type'              => 'array',
+			'sanitize_callback' => 'somfrp_design_settings_sanitize_options',
+		)
+	);
+
+	add_settings_section(
+		'somfrp_design_settings_section',
+		__( 'Design Settings', 'frontend-reset-password' ),
+		'somfrp_design_settings_section_callback',
+		'somfrp_design_settings'
+	);
+
+	add_settings_field(
+		'somfrp_enable_eye_toggle',
+		__( 'Show Eye Icon on Password Fields', 'frontend-reset-password' ),
+		'somfrp_enable_eye_toggle_render',
+		'somfrp_design_settings',
+		'somfrp_design_settings_section'
+	);
+
+}
+
+function somfrp_security_sanitize_options( $data ) {
+	$old_options = get_option( 'somfrp_security_settings' );
+	$has_errors  = false;
+
+	$minlen = isset( $data['somfrp_pass_length'] ) ? absint( $data['somfrp_pass_length'] ) : 0;
+
+	if ( $minlen > 0 ) {
+		$rightmin = 0;
+
+		if ( ! empty( $data['somfrp_pass_lowercase'] ) ) {
+			$rightmin++;
+		}
+		if ( ! empty( $data['somfrp_pass_uppercase'] ) ) {
+			$rightmin++;
+		}
+		if ( ! empty( $data['somfrp_pass_number'] ) ) {
+			$rightmin++;
+		}
+		if ( ! empty( $data['somfrp_pass_special'] ) ) {
+			$rightmin++;
+		}
+
+		if ( $minlen < $rightmin ) {
+			add_settings_error(
+				'prefix_messages',
+				'prefix_message',
+				__( 'Minimum length must be equal to or greater than the number of features checked.', 'frontend-reset-password' ),
+				'error'
+			);
+			$has_errors = true;
+		}
+	}
+
+	if ( $has_errors ) {
+		$data = $old_options;
+	}
+
+	return $data;
+}
+
+function somfrp_design_settings_sanitize_options( $input ) {
+	// Ensure array
+	$input = is_array( $input ) ? $input : array();
+
+	// If the checkbox is unchecked, it won't be in $input at all.
+	// Force an explicit 'off' in that case.
+	$input['somfrp_enable_eye_toggle'] = isset( $input['somfrp_enable_eye_toggle'] ) ? 'on' : 'off';
+
+	return $input;
 }
 
 function somfrp_email_message_render() {
@@ -575,6 +711,21 @@ function somfrp_email_message_render() {
 
 }
 
+function somfrp_reset_link_text_render() {
+
+	$options = get_option( 'somfrp_gen_settings' );
+	$value = ( isset( $options['somfrp_reset_link_text'] ) && $options['somfrp_reset_link_text'] ) ? esc_html($options['somfrp_reset_link_text']) : '' ;
+	$default = esc_html__( 'Reset Password', 'frontend-reset-password' ); ?>
+
+	<p style="margin-bottom: 15px;"><strong>Customise the text for the reset link.</strong></p>
+	<p>If left blank, the default URL will be used.</p>
+	
+	<input type="text" name="somfrp_gen_settings[somfrp_reset_link_text]" value="<?php echo $value; ?>" style="width: 300px; max-width: 100%;" placeholder="">
+
+	<hr class="somfrp-gen-settings-hr w-300">
+	<?php
+}
+
 function somfrp_from_name_render() { 
 
 	$options = get_option( 'somfrp_gen_settings' );
@@ -624,6 +775,10 @@ function somfrp_security_settings_section_callback() {
 	_e( 'Settings for password security', 'frontend-reset-password' );
 }
 
+function somfrp_design_settings_section_callback() {
+    _e( 'Settings for design and appearance', 'frontend-reset-password' );
+}
+
 function somfrp_notice_bg_render() {
 
 	$options = get_option( 'somfrp_gen_settings' );
@@ -643,7 +798,6 @@ function somfrp_pass_length_render() {
 
 	$options = get_option( 'somfrp_security_settings' );
 	$value = ( isset( $options['somfrp_pass_length'] ) && $options['somfrp_pass_length'] ) ? esc_html($options['somfrp_pass_length']) : '' ;
-	
 	?>
 
 	<p><strong>Set a minimum password length.</strong></p>
@@ -653,6 +807,49 @@ function somfrp_pass_length_render() {
 	<?php
 
 }
+
+// CJS
+function somfrp_pass_format_render() {
+	$options         = get_option( 'somfrp_security_settings' );
+	$lowerchecked    = ( isset( $options['somfrp_pass_lowercase'] ) && $options['somfrp_pass_lowercase'] ) ? esc_attr( $options['somfrp_pass_lowercase'] ) : '';
+	$upperchecked    = ( isset( $options['somfrp_pass_uppercase'] ) && $options['somfrp_pass_uppercase'] ) ? esc_attr( $options['somfrp_pass_uppercase'] ) : '';
+	$numberchecked   = ( isset( $options['somfrp_pass_number'] ) && $options['somfrp_pass_number'] ) ? esc_attr( $options['somfrp_pass_number'] ) : '';
+	$specialchecked  = ( isset( $options['somfrp_pass_special'] ) && $options['somfrp_pass_special'] ) ? esc_attr( $options['somfrp_pass_special'] ) : '';
+	?>
+
+	<p><strong><?php esc_html_e( 'Set a minimum password format.', 'frontend-reset-password' ); ?></strong></p>
+
+	<label>
+		<input type="checkbox" name="somfrp_security_settings[somfrp_pass_lowercase]" <?php checked( $lowerchecked, 'on' ); ?> />
+		<?php esc_html_e( 'Require at least one lowercase letter', 'frontend-reset-password' ); ?>
+	</label>
+	<br>
+
+	<label>
+		<input type="checkbox" name="somfrp_security_settings[somfrp_pass_uppercase]" <?php checked( $upperchecked, 'on' ); ?> />
+		<?php esc_html_e( 'Require at least one uppercase letter', 'frontend-reset-password' ); ?>
+	</label>
+	<br>
+
+	<label>
+		<input type="checkbox" name="somfrp_security_settings[somfrp_pass_number]" <?php checked( $numberchecked, 'on' ); ?> />
+		<?php esc_html_e( 'Require at least one number', 'frontend-reset-password' ); ?>
+	</label>
+	<br>
+
+	<label>
+		<input type="checkbox" name="somfrp_security_settings[somfrp_pass_special]" <?php checked( $specialchecked, 'on' ); ?> />
+		<?php esc_html_e( 'Require at least one special character from', 'frontend-reset-password' ); ?>
+		<span>!@#$%^&amp;*_=+</span>
+	</label>
+	<br>
+
+	<?php
+}
+
+
+// CJS end
+
 
 function somfrp_reset_page_render() {
 
@@ -892,4 +1089,19 @@ function somfrp_email_subject_render() {
 	<input type="text" name="somfrp_gen_settings[somfrp_email_subject]" value="<?php echo $value; ?>" style="width: 300px; max-width: 100%;">
 	<?php
 
+}
+
+function somfrp_enable_eye_toggle_render() {
+	$options = get_option( 'somfrp_design_settings' );
+	// Default to 'on' if option not saved yet
+	$enabled = isset( $options['somfrp_enable_eye_toggle'] ) ? ( $options['somfrp_enable_eye_toggle'] === 'on' ) : true;
+	?>
+	<label for="somfrp_enable_eye_toggle">
+		<input type="checkbox"
+		       id="somfrp_enable_eye_toggle"
+		       name="somfrp_design_settings[somfrp_enable_eye_toggle]"
+		       value="on" <?php checked( $enabled ); ?> />
+		<?php esc_html_e( 'Enable the eye icon to toggle password visibility on password fields.', 'frontend-reset-password' ); ?>
+	</label>
+	<?php
 }

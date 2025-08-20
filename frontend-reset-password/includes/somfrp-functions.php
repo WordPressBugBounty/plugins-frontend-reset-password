@@ -113,6 +113,51 @@ function somfrp_render_lost_password_form() {
 	return somfrp_get_template_html( 'lost_password_form' );
 }
 
+
+function get_format_requirements( $options ) {
+	$lowerchecked   = ( isset( $options['somfrp_pass_lowercase'] ) && $options['somfrp_pass_lowercase'] ) ? esc_attr( $options['somfrp_pass_lowercase'] ) : '';
+	$upperchecked   = ( isset( $options['somfrp_pass_uppercase'] ) && $options['somfrp_pass_uppercase'] ) ? esc_attr( $options['somfrp_pass_uppercase'] ) : '';
+	$numberchecked  = ( isset( $options['somfrp_pass_number'] ) && $options['somfrp_pass_number'] ) ? esc_attr( $options['somfrp_pass_number'] ) : '';
+	$specialchecked = ( isset( $options['somfrp_pass_special'] ) && $options['somfrp_pass_special'] ) ? esc_attr( $options['somfrp_pass_special'] ) : '';
+	$min_length     = isset( $options['somfrp_pass_length'] ) ? absint( $options['somfrp_pass_length'] ) : 0;
+
+	$lowerchecked   = ( 'on' === $lowerchecked );
+	$upperchecked   = ( 'on' === $upperchecked );
+	$numberchecked  = ( 'on' === $numberchecked );
+	$specialchecked = ( 'on' === $specialchecked );
+
+	if ( ! $lowerchecked && ! $upperchecked && ! $numberchecked && ! $specialchecked && ! $min_length ) {
+		return '';
+	}
+
+	ob_start();
+	?>
+	<div class="password-requirements">
+		<p><?php esc_html_e( 'Your password must include at least:', 'frontend-reset-password' ); ?></p>
+		<ul id="password-requirements-list">
+			<?php if ( $min_length ) : ?>
+				<li id="require-length" class="requirement"><?php echo sprintf( esc_html__( 'Minimum %d characters', 'frontend-reset-password' ), $min_length ); ?></li>
+			<?php endif; ?>
+			<?php if ( $lowerchecked ) : ?>
+				<li id="require-lower" class="requirement"><?php esc_html_e( 'One lowercase letter (a–z)', 'frontend-reset-password' ); ?></li>
+			<?php endif; ?>
+			<?php if ( $upperchecked ) : ?>
+				<li id="require-upper" class="requirement"><?php esc_html_e( 'One uppercase letter (A–Z)', 'frontend-reset-password' ); ?></li>
+			<?php endif; ?>
+			<?php if ( $numberchecked ) : ?>
+				<li id="require-number" class="requirement"><?php esc_html_e( 'One number (0–9)', 'frontend-reset-password' ); ?></li>
+			<?php endif; ?>
+			<?php if ( $specialchecked ) : ?>
+				<li id="require-special" class="requirement"><?php esc_html_e( 'One special character (e.g. !@#$%^&*_=+)', 'frontend-reset-password' ); ?></li>
+			<?php endif; ?>
+		</ul>
+	</div>
+	<?php
+
+	return ob_get_clean();
+}
+
+
 function somfrp_get_template_html( $template_name ) {
 
 	ob_start();
@@ -158,6 +203,7 @@ function somfrp_get_template_html( $template_name ) {
 
 		if ( empty( $reset_text ) ) {
 			$reset_text = esc_html__( 'Please enter a new password.', 'frontend-reset-password' );
+			$reset_text .= get_format_requirements($sec_options);
 			$reset_text_output = '<p class="extra-space">' . $reset_text . '</p>';
 		} else {
 			$allowed_tags = somfrp_get_allowed_html_tags();
@@ -171,7 +217,8 @@ function somfrp_get_template_html( $template_name ) {
 			: '' ;
 
 		if ( empty( $reset_text ) ) {
-			$reset_text = sprintf( esc_html__( 'Please enter a new password. Minimum %s characters.', 'frontend-reset-password' ), $min_length );
+			$reset_text = esc_html__( 'Please enter a new password.', 'frontend-reset-password' );
+			$reset_text .= get_format_requirements($sec_options);
 			$reset_text_output = '<p class="extra-space">' . $reset_text . '</p>';
 		} else {
 			$allowed_tags = somfrp_get_allowed_html_tags();
@@ -382,7 +429,18 @@ function somfrp_lost_pass_callback() {
 		)
 	);
 
-	$reset_link = '<a href="' . $reset_url . '">' . $reset_url . '</a>';
+	// Build the final link HTML once (use label if provided, otherwise show the URL)
+	$options = get_option( 'somfrp_gen_settings' );
+	// Get the label from settings (HTML escaped)
+	$reset_text_value = ( ! empty( $options['somfrp_reset_link_text'] ) )
+    ? esc_html( trim( $options['somfrp_reset_link_text'] ) )
+    : '';
+
+	// If no label is set, default to showing the URL itself
+	$link_label      = $reset_text_value !== '' ? $reset_text_value : $reset_url;
+
+	// Build the full anchor once
+	$reset_link = '<a href="' . esc_url( $reset_url ) . '">' . esc_html( $link_label ) . '</a>';
 
 	$options = get_option( 'somfrp_gen_settings' );
 
@@ -687,4 +745,25 @@ function somfrp_wp_error( $message, $args = array() ) {
 	$error = new WP_Error( 'somfrp_error', $message );
 	$site_title = get_bloginfo( 'name' );
 	wp_die( $error, $site_title . ' - Error', $args );
+}
+
+function get_password_pattern() {
+	$sec_options = get_option( 'somfrp_security_settings' );
+
+	$min_length = isset( $sec_options['somfrp_pass_length'] ) ? absint( $sec_options['somfrp_pass_length'] ) : 0;
+
+	$lowercase = isset( $sec_options['somfrp_pass_lowercase'] ) ? $sec_options['somfrp_pass_lowercase'] : '';
+	$uppercase = isset( $sec_options['somfrp_pass_uppercase'] ) ? $sec_options['somfrp_pass_uppercase'] : '';
+	$number    = isset( $sec_options['somfrp_pass_number'] ) ? $sec_options['somfrp_pass_number'] : '';
+	$special   = isset( $sec_options['somfrp_pass_special'] ) ? $sec_options['somfrp_pass_special'] : '';
+
+	$lowercasere  = ( 'on' === $lowercase ) ? '(?=.*[a-z])' : '';
+	$uppercasere  = ( 'on' === $uppercase ) ? '(?=.*[A-Z])' : '';
+	$numberre     = ( 'on' === $number ) ? '(?=.*\d)' : '';
+	$specialre    = ( 'on' === $special ) ? '(?=.*[!@#$%^&*_=+])' : '';
+	$lengthrange  = max( 0, $min_length ); // ensure non-negative
+
+	$pattern = '^' . $lowercasere . $uppercasere . $numberre . $specialre . '.{' . $lengthrange . ',}$';
+
+	return $pattern;
 }

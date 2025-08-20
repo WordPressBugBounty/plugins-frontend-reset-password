@@ -80,6 +80,12 @@ You can customise **Frontend Reset Password** on the Plugins, Frontend Reset Pas
 
 == Changelog ==
 
+= 1.2.4 - 20th August 2025
+* [NEW] New setting "Reset Link Text" - this will change the reset link text in the email from the URL to be what you add in the setting.
+* [NEW] New Setting "Show Eye Icon on Password Fields" - if enabled it will allow the users to toggle the password visibility on the reset password.
+* [NEW] Added optional password format requirements. You can now choose to require at least one lowercase letter, one uppercase letter, one number, and/or one special character. Each requirement can be enabled individually.
+* [MOD] Modified the password reset form to display the requirements (character length and format requirements) in a list form and if they do not meet them, it will be red. When they meet the requirement it will go green.
+
 = 1.2.3 - 16th April 2025 =
 * Fixed bug when using WP 2FA
 * Added {email} tag as option for custom email template

@@ -148,7 +148,20 @@ function get_format_requirements( $options ) {
 				<li id="require-number" class="requirement"><?php esc_html_e( 'One number (0–9)', 'frontend-reset-password' ); ?></li>
 			<?php endif; ?>
 			<?php if ( $specialchecked ) : ?>
-				<li id="require-special" class="requirement"><?php esc_html_e( 'One special character (e.g. !@#$%^&*_=+)', 'frontend-reset-password' ); ?></li>
+				<?php
+				$special_chars = somfrp_get_special_chars( $options );
+				// Show a truncated preview if the list is long
+				$display_chars = strlen( $special_chars ) > 20 ? substr( $special_chars, 0, 15 ) . '...' : $special_chars;
+				?>
+				<li id="require-special" class="requirement">
+					<?php
+					printf(
+						/* translators: %s: example special characters */
+						esc_html__( 'One special character (e.g. %s)', 'frontend-reset-password' ),
+						esc_html( $display_chars )
+					);
+					?>
+				</li>
 			<?php endif; ?>
 		</ul>
 	</div>
@@ -747,6 +760,65 @@ function somfrp_wp_error( $message, $args = array() ) {
 	wp_die( $error, $site_title . ' - Error', $args );
 }
 
+/**
+ * Get the allowed special characters for password validation.
+ *
+ * @param array|null $options Optional security options array. If not provided, will be fetched.
+ * @return string The allowed special characters.
+ */
+function somfrp_get_special_chars( $options = null ) {
+	if ( null === $options ) {
+		$options = get_option( 'somfrp_security_settings' );
+	}
+
+	// OWASP recommended special characters (including space)
+	$default = ' !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~';
+
+	$special_chars = isset( $options['somfrp_special_chars'] ) && $options['somfrp_special_chars'] !== ''
+		? $options['somfrp_special_chars']
+		: $default;
+
+	return $special_chars;
+}
+
+/**
+ * Escape special characters for use in a regex character class.
+ *
+ * @param string $chars The characters to escape.
+ * @return string The escaped characters safe for use in a regex character class.
+ */
+function somfrp_escape_chars_for_regex( $chars ) {
+	// Characters that need escaping inside a regex character class: ] \ ^ -
+	// The hyphen is safe if placed at the end
+	$escaped = '';
+	$has_hyphen = false;
+	$has_caret = false;
+
+	for ( $i = 0; $i < strlen( $chars ); $i++ ) {
+		$char = $chars[ $i ];
+		if ( $char === '-' ) {
+			$has_hyphen = true;
+		} elseif ( $char === '^' ) {
+			$has_caret = true;
+		} elseif ( $char === ']' || $char === '\\' ) {
+			$escaped .= '\\' . $char;
+		} else {
+			$escaped .= $char;
+		}
+	}
+
+	// Add caret at the end (not at start where it means negation)
+	if ( $has_caret ) {
+		$escaped .= '^';
+	}
+	// Add hyphen at the very end (safe position)
+	if ( $has_hyphen ) {
+		$escaped .= '-';
+	}
+
+	return $escaped;
+}
+
 function get_password_pattern() {
 	$sec_options = get_option( 'somfrp_security_settings' );
 
@@ -759,9 +831,18 @@ function get_password_pattern() {
 
 	$lowercasere  = ( 'on' === $lowercase ) ? '(?=.*[a-z])' : '';
 	$uppercasere  = ( 'on' === $uppercase ) ? '(?=.*[A-Z])' : '';
-	$numberre     = ( 'on' === $number ) ? '(?=.*\d)' : '';
-	$specialre    = ( 'on' === $special ) ? '(?=.*[!@#$%^&*_=+])' : '';
-	$lengthrange  = max( 0, $min_length ); // ensure non-negative
+	$numberre     = ( 'on' === $number ) ? '(?=.*\\d)' : '';
+
+	// Use custom special characters if special requirement is enabled
+	if ( 'on' === $special ) {
+		$special_chars = somfrp_get_special_chars( $sec_options );
+		$escaped_chars = somfrp_escape_chars_for_regex( $special_chars );
+		$specialre     = '(?=.*[' . $escaped_chars . '])';
+	} else {
+		$specialre = '';
+	}
+
+	$lengthrange = max( 0, $min_length ); // ensure non-negative
 
 	$pattern = '^' . $lowercasere . $uppercasere . $numberre . $specialre . '.{' . $lengthrange . ',}$';
 

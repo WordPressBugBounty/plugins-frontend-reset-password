@@ -44,7 +44,7 @@ $somfrp_enable_eye = ( ! isset( $design_options['somfrp_enable_eye_toggle'] ) ||
 							id="som_new_user_pass"
 							class="disblock som-password-input som-pass-strength-input"
 							type="password"
-							pattern="<?php echo get_password_pattern(); ?>"
+							pattern="<?php echo esc_attr( get_password_pattern() ); ?>"
 							required
 							autocomplete="new-password"
 							aria-label="<?php esc_attr_e( 'New Password', 'frontend-reset-password' ); ?>"
@@ -78,7 +78,7 @@ $somfrp_enable_eye = ( ! isset( $design_options['somfrp_enable_eye_toggle'] ) ||
 							id="som_new_user_pass_again"
 							class="disblock som-password-input"
 							type="password"
-							pattern="<?php echo get_password_pattern(); ?>"
+							pattern="<?php echo esc_attr( get_password_pattern() ); ?>"
 							required
 							autocomplete="new-password"
 							aria-label="<?php esc_attr_e( 'Re-enter Password', 'frontend-reset-password' ); ?>"
@@ -117,6 +117,8 @@ $somfrp_enable_eye = ( ! isset( $design_options['somfrp_enable_eye_toggle'] ) ||
 	<?php
 	// Pass length for live requirement checks
 	$min_length = isset( $sec_options['somfrp_pass_length'] ) ? absint( $sec_options['somfrp_pass_length'] ) : 0;
+	// Get special characters for JavaScript validation
+	$special_chars = somfrp_get_special_chars( $sec_options );
 	?>
 
 	<script>
@@ -126,6 +128,35 @@ $somfrp_enable_eye = ( ! isset( $design_options['somfrp_enable_eye_toggle'] ) ||
 			if (!passwordInput) return;
 
 			var minLength = <?php echo (int) $min_length; ?>;
+			// Special characters passed from PHP - we need to escape for JS string and regex
+			var specialChars = <?php echo wp_json_encode( $special_chars ); ?>;
+
+			// Build a regex character class from the special chars
+			function escapeForRegexClass(str) {
+				// Escape characters that have special meaning in regex character classes: ] \ ^ -
+				var escaped = '';
+				var hasHyphen = false;
+				var hasCaret = false;
+				for (var i = 0; i < str.length; i++) {
+					var c = str[i];
+					if (c === '-') {
+						hasHyphen = true;
+					} else if (c === '^') {
+						hasCaret = true;
+					} else if (c === ']' || c === '\\') {
+						escaped += '\\' + c;
+					} else {
+						escaped += c;
+					}
+				}
+				// Add caret at the end (not at start where it means negation)
+				if (hasCaret) escaped += '^';
+				// Add hyphen at the very end (safe position)
+				if (hasHyphen) escaped += '-';
+				return escaped;
+			}
+
+			var specialRegex = new RegExp('[' + escapeForRegexClass(specialChars) + ']');
 
 			passwordInput.addEventListener('input', function () {
 				var val = passwordInput.value;
@@ -133,7 +164,7 @@ $somfrp_enable_eye = ( ! isset( $design_options['somfrp_enable_eye_toggle'] ) ||
 				var hasLower   = /[a-z]/.test(val);
 				var hasUpper   = /[A-Z]/.test(val);
 				var hasNumber  = /[0-9]/.test(val);
-				var hasSpecial = /[!@#$%^&*_=+]/.test(val);
+				var hasSpecial = specialRegex.test(val);
 				var hasLength  = val.length >= minLength;
 
 				updateRequirement('require-lower', hasLower);

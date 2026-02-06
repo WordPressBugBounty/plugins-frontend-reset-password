@@ -90,7 +90,6 @@
 	font-weight: 700!important;
 	font-size: 22px!important;
 	float: left;
-	font-family: 'Raleway', sans-serif;
 	margin: 0!important;
 	padding: 0!important;
 	color: #fff;
@@ -238,8 +237,7 @@
 
 .som-main-plugin-content h1 {
 	text-align: center;
-	font-weight: 700!important;	
-	/*font-family: 'Raleway', sans-serif;*/
+	font-weight: 700!important;
 }
 
 .som-settings-main-wrap {

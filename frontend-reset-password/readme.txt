@@ -3,13 +3,20 @@ Contributors: wpenhanced, rwebster85
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VAYF6G99MCMHU
 Author URI: https://wpenhanced.com
 Requires at Least: 4.4
-Tested up to: 6.8
+Tested up to: 6.9
 Stable tag: trunk
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: password, reset password, lost password, login
 
 Let your users reset their forgotten passwords from the frontend of your website.
+
+== Documentation ==
+
+Full documentation and setup guide:
+https://docs.wpenhanced.com/frontend-reset-password/
+
+Find answers, usage examples, and troubleshooting tips on our official documentation site.
 
 == Description ==
 
@@ -23,28 +30,41 @@ The plugin works by hooking into the ``lostpassword_url`` WordPress filter, mean
 
 **Frontend Reset Password** is also translation ready.
 
+**New:**
+- Modern settings framework for easy configuration & searching our documentation
+- Password requirements and eye icon toggle
+- Customizable reset link text and email templates
+- Full documentation at https://docs.wpenhanced.com/frontend-reset-password/
+
 == Setup Guide ==
 
-= Step 1 =
-Include our shortcode ``[reset_password]`` in any page you want
+Quick Start:
+1. Add the shortcode `[reset_password]` to any page.
+2. Visit **Settings > Frontend Reset Password** in your WordPress admin to select your reset page and configure options.
+3. (Optional) Customize form text, password requirements, and email templates.
 
-= Step 2 =
-Go to the plugin settings page and select which page your shortcode is on.
-
-= Step 3 =
-Customise! This is optional, the plugin works right out of the box, but you're able to change the text for the form elements.
+See the [online documentation](https://docs.wpenhanced.com/frontend-reset-password/) for screenshots and advanced usage.
 
 == Customisation ==
 
-The text in the lost/reset password forms can be customised. Very little CSS styling is used, so the forms should style with your website theme beautifully.
+**Customisation Features:**
+- Change all form text and labels
+- Set password requirements (length, character types)
+- Show/hide eye icon for password fields
+- Customize email subject, sender, and template
+- Display login link after password reset
+
+Very little CSS styling is used, so the forms should style with your website theme beautifully.
 
 If you use a frontend login page you can set that in the plugin also. Users are told they can login and are shown the url when they successfully change their password.
 
 You can also set the minimum number of characters required for a password. Default is 0.
 
-== Support ==
+== Support & Resources ==
 
-Quick start guide included on the plugin settings page. For anything else post on the wordpress.org support forum.
+- [Full Documentation](https://docs.wpenhanced.com/frontend-reset-password/)
+- Quick start guide in plugin settings
+- [WordPress.org Support Forum](https://wordpress.org/support/plugin/frontend-reset-password/)
 
 == Installation ==
 
@@ -65,13 +85,16 @@ Quick start guide included on the plugin settings page. For anything else post o
 5. In the WordPress dashboard go to Plugins, Installed Plugins, and activate **Frontend Reset Password**
 6. Make sure to read the quick start guide! (it's really short)
 
-You can customise **Frontend Reset Password** on the Plugins, Frontend Reset Password dashboard page.
+For detailed installation steps, troubleshooting, and advanced configuration, visit:
+https://docs.wpenhanced.com/frontend-reset-password/
 
 == Frequently Asked Questions ==
 
-= Error Messages =
-
 **The e-mail could not be sent:** This happens when the wp_mail() function call fails. If you're testing the plugin on a localhost and don't use a local email server, this error will show.
+
+**Settings page dropdown shows 403 or "Failed to load resource" (Solid Security):** If you use Solid Security (formerly iThemes Security) with "Restrict REST API" enabled, the page selector in settings can be blocked. This plugin automatically allows logged-in administrators to load the pages list for that dropdown only. Make sure you are logged in as an admin when opening the settings page. If the dropdown still fails, temporarily set Solid Security's REST API access to "Default" under Security > Settings > Advanced, or check that your user has the "manage_options" capability.
+
+See the [FAQ section in our documentation](https://docs.wpenhanced.com/frontend-reset-password/#faq) for more common questions and solutions.
 
 == Screenshots ==
 
@@ -80,11 +103,33 @@ You can customise **Frontend Reset Password** on the Plugins, Frontend Reset Pas
 
 == Changelog ==
 
-= 1.2.4 - 20th August 2025
+= 1.3.3 = 30th January 2026 =
+* [MOD] Strange, endless update loop (saying it was still 1.3.1)
+
+= 1.3.2 = 30th January 2026 =
+* [MOD] Page dropdown in settings now uses AJAX only (one request shared across all page fields); works when REST API is restricted
+
+= 1.3.1 = 29th January 2026 =
+* [FIX] Password reset form no longer shows raw special characters or regex in the page when special character requirement is enabled
+* [FIX] Settings page "page dropdown" now works when Solid Security (or similar) blocks the public REST API
+
+= 1.3.0 - 28th January 2026 =
+* [NEW] New settings framework for our common brand. Search documentation and settings in WordPress admin
+* [NEW] Full documentation site: https://docs.wpenhanced.com/frontend-reset-password/
+* [NEW] Customizable special characters for password requirements. Now uses the full OWASP recommended character set by default, and allows admins to customize the allowed characters.
+* [NEW] Added Settings link on the Plugins page for quick access to plugin settings
+* [MOD] Removal of google font being loaded in CSS
+* [MOD] Legacy Settings menu (Settings > Frontend Reset Password) now redirects to the new WP Enhanced settings page
+
+= 1.2.5 - 23rd January 2026 =
+* [MOD] Confirmed compatibility with WordPress 6.9
+
+= 1.2.4 - 20th August 2025 =
 * [NEW] New setting "Reset Link Text" - this will change the reset link text in the email from the URL to be what you add in the setting.
-* [NEW] New Setting "Show Eye Icon on Password Fields" - if enabled it will allow the users to toggle the password visibility on the reset password.
-* [NEW] Added optional password format requirements. You can now choose to require at least one lowercase letter, one uppercase letter, one number, and/or one special character. Each requirement can be enabled individually.
+* [NEW] New Setting "Show Eye Icon on Password Fields" - if enabled it will allow the users to toggle the password visibility on the reset password.*
+* [NEW] Added optional password format requirements. You can now choose to require at least one lowercase letter, one uppercase letter, one number, and/or one special character. Each requirement can be enabled individually.*
 * [MOD] Modified the password reset form to display the requirements (character length and format requirements) in a list form and if they do not meet them, it will be red. When they meet the requirement it will go green.
+* [THANKS] Special thanks to Colin Stearman (@britcoder) for his contributions and suggestions toward these enhancements.
 
 = 1.2.3 - 16th April 2025 =
 * Fixed bug when using WP 2FA
